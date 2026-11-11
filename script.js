@@ -129,18 +129,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if (errors.length > 0) {
                 errorContainer.innerHTML = errors.join('<br>');
             } else {
-                errorContainer.style.color = '#10B981'; // Зелений колір успіху
-                errorContainer.innerHTML = 'Форма успішно заповнена! Курс додається...';
-                
-                // Скидаємо форму через 2 секунди
-                setTimeout(() => {
-                    teacherForm.reset();
-                    errorContainer.innerHTML = '';
-                    errorContainer.style.color = 'var(--danger-color)';
-                }, 2000);
-            }
-        });
+    errorContainer.style.color = '#10B981'; // Зелений колір успіху
+    errorContainer.innerHTML = 'Відправляємо дані на сервер...';
+
+    // Збираємо дані з форми
+    const courseData = {
+        name: courseName.value.trim(),
+        category: document.getElementById('course-cat') ? document.getElementById('course-cat').value : '', // Додано перевірку, якщо селекта немає
+        duration: courseDuration.value.trim(),
+        desc: courseDesc ? courseDesc.value.trim() : '' // Додано перевірку
+    };
+
+    // Відправляємо POST-запит на наш Node.js сервер
+    fetch('http://localhost:3000/api/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(courseData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            errorContainer.innerHTML = '✅ Форма успішно заповнена! Дані збережено в БД!';
+            // Скидаємо форму через 2 секунди
+            setTimeout(() => {
+                teacherForm.reset();
+                errorContainer.innerHTML = '';
+                errorContainer.style.color = 'var(--danger-color)';
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        errorContainer.style.color = 'var(--danger-color)';
+        errorContainer.innerHTML = '❌ Помилка з\'єднання з сервером!';
+        console.error('Помилка fetch:', error);
+    });
     }
+});
+}
     // ==========================================
     // 5. КНОПКА "ВІДКРИТИ ПОВНУ ФОРМУ"
     // ==========================================
